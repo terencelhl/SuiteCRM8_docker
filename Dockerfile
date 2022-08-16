@@ -7,7 +7,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update
 RUN apt -y upgrade
-RUN apt-get install vim -y
+RUN apt-get install vim cron -y
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get install apache2 -y
@@ -32,6 +32,15 @@ RUN apt-get update && apt-get upgrade -y && \
 
 RUN npm install -g @angular/cli
 RUN npm install --global yarn
+
+COPY ./docker/config/cron/suitecrm /etc/cron.d/suitecrm
+RUN chmod 0644 /etc/cron.d/suitecrm
+RUN chown root: /etc/cron.d/suitecrm
+RUN crontab /etc/cron.d/suitecrm
+RUN touch /var/log/cron.log
+RUN service cron start
+CMD cron && tail -f /var/log/cron.log
+
 
 CMD ["apachectl", "-D", "FOREGROUND"]
 
